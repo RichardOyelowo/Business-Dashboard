@@ -4,3 +4,4 @@ flask-wtf
 flask-migrate
 WTForms
 email-validator
+dotenv
