@@ -1,0 +1,76 @@
+{% extends "layout.html" %} 
+{% block title %}Customers{% endblock %} 
+
+{% block content %}
+<div class="row mb-4">
+  <div class="col-12">
+    <h1>👥 Customers</h1>
+  </div>
+</div>
+
+<div class="row mb-3">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Quick Actions</h5>
+        <a
+          href="{{ url_for('customer_new') }}"
+          class="btn btn-primary mb-2 w-100"
+          >➕ Add New Customer
+        </a>
+        <a href="{{ url_for('orders') }}" class="btn btn-success w-100"
+          >📦 View Orders
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="table-responsive">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Company</th>
+        <th>Created</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for customer in customers %}
+        <tr>
+          <td>{{ customer.name|string|title }}</td>
+          <td>{{ customer.email }}</td>
+          <td>{{ customer.phone or N/A }}</td>
+          <td>{{ customer.company|string|title or N/A }}</td>
+          <td>{{ customer.created_at.strftime("%m-%d-%Y") }}</td>
+          <td>
+            <a
+              class="btn btn-sm btn-primary"
+              href="{{ url_for('customer_edit', id=customer.id) }}"
+            >
+              ✏️ Edit
+            </a>
+            <form style="margin-top: 5%;"
+              action="{{ url_for('customer_delete', id=customer.id) }}"
+              method="post"
+              onsubmit="return confirm('Are you sure you want to delete {{ customer.name }}?');"
+            >
+              <button type="submit" class="btn btn-sm btn-danger">
+                🗑️ Delete
+              </button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <td class="text-muted text-center" colspan="6">
+          No customers yet. Click "Add New Customer" to get started
+        </td>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

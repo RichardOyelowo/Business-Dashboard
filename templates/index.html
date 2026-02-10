@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard Home{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">📊 Business Dashboard</h1>
+        <p class="text-muted">Welcome to your business management system</p>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-info mb-3">
+            <div class="card-body text-left">
+                <h5 class="card-title">Total Revenue</h5>
+                <h2 class="display-4">${{ "%.2f"|format(total_revenue) }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-body text-left">
+                <h5 class="card-title">Customers</h5>
+                <h2 class="display-4">{{ total_customers }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-body text-left">
+                <h5 class="card-title">Total Orders</h5>
+                <h2 class="display-4">{{ total_orders }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-body text-left">
+                <h5 class="card-title">Pending Orders</h5>
+                <h2 class="display-4">{{ pending_orders }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Quick Actions</h5>
+                <a href="{{ url_for('customer_new') }}" class="btn btn-primary mb-2 w-100">➕ Add New Customer</a>
+                <a href="{{ url_for('order_new') }}" class="btn btn-success w-100">➕ Add New Order</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">View Data</h5>
+                <a href="{{ url_for('customers') }}" class="btn btn-outline-primary mb-2 w-100">👥 View All Customers</a>
+                <a href="{{ url_for('orders') }}" class="btn btn-outline-success w-100">📦 View All Orders</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
