@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% from "macros.html" import render_field %}
 
-{% block title %}Business Dashboard: Login{% endblock %}
+{% block title %}Login{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -20,7 +20,8 @@
                         
                     </div>
                     <div class="mt-4">
-                        <a href="{{ url_for('auth.signup') }}">Create account</a>
+                        <a type="submit" class="btn btn-secondary" href="{{ url_for('auth.signup') }}">Create account</a>
+                        <a href="{{ url_for('auth.forgot_password') }}">Forgotten Password</a>
                     </div>
                 </form>
             </div>

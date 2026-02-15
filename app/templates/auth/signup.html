@@ -1,10 +1,16 @@
 {% extends "layout.html" %}
 {% from "macros.html" import render_field %}
 
-{% block title %}Business Dashboard: SignUp{% endblock %}
+{% block title %}SignUp{% endblock %}
 
 {% block content %}
 <div class="row">
+     <div class="mb-3">
+        <!-- Display error message if it exists -->
+        {% if error %}
+            <h2 class="error-message">{{ error }}</h2>
+        {% endif %}
+    </div>
     <div class="col-md-8">
         <h1>SignUp</h1>
         <div class="card mt-4">
