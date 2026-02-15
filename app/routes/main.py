@@ -2,6 +2,7 @@ from flask import render_template, Blueprint, g
 from app.models.customer import Customer
 from app.models.order import Order
 from app.auth import login_required
+from app.extensions import db
 
 index_bp = Blueprint("index",__name__)
 
@@ -11,7 +12,7 @@ def index():
     """Dashboard Page with Stats"""
     user = g.user
 
-    customers =  Customer.query.filter(Customer.user_id == user.id).all()
+    customers =  Customer.query.filter_by(user_id=user.id).all()
     orders = Order.query.join(Customer).filter(Customer.user_id == user.id).all()
 
     total_customers = len(customers)

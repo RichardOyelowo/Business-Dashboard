@@ -14,8 +14,9 @@ def customers():
     page = request.args.get("page",1,type=int)
     user = g.user
 
-    pagination = Customer.query.join(Customer).filter(Customer.user_id == user.id).order_by(
-        Customer.created_at.desc()).paginate(page=page, per_page=10, error_out=False)
+    pagination = Customer.query.filter_by(user_id=user.id).order_by(
+        Customer.created_at.desc()
+    ).paginate(page=page, per_page=10, error_out=False)
 
     return render_template("customers.html", customers=pagination.items, pagination=pagination)
 
@@ -24,11 +25,12 @@ def customers():
 @login_required
 def customer_new():
     form = CustomerCreate()
+    user = g.user
 
     if form.validate_on_submit():
         customer = Customer(
             name = form.name.data,
-            user_id = current_user().id,
+            user_id = user.id,
             email = form.email.data,
             phone = form.phone.data,
             company = form.company.data
@@ -47,7 +49,7 @@ def customer_new():
 @login_required
 def customer_edit(id):
     user = g.user
-    customer = Customer.query.filter(Customer.user_id == user.id).first_or_404(id)
+    customer = Customer.query.filter(Customer.id == id, Customer.user_id == user.id).first_or_404(id)
     
     form = CustomerEdit(obj=customer, customer=customer)
     
@@ -65,7 +67,7 @@ def customer_edit(id):
 @login_required
 def customer_delete(id):
     user = g.user
-    customer = Customer.query.filter(Customer.user_id == user.id).first_or_404(id)
+    customer = Customer.query.filter_by(user_id=user.id).first_or_404(id)
 
     if Order.query.filter_by(customer_id=customer.id).first():
         flash("Cannot delete customer with existing orders.", "danger")

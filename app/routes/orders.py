@@ -1,3 +1,4 @@
+from os import wait
 from flask import Blueprint, render_template, redirect, request, flash, url_for, g
 from app.auth import login_required
 from app.models.customer import Customer
@@ -14,11 +15,8 @@ def orders():
     page = request.args.get("page",1,type=int)
     user = g.user
 
-    customers = Customer.query.filter(Customer.user_id == user.id).all()
-
-    pagination = Order.query.join(Customer).filter(Customer.user_id == user.id).order_by(Order.created).paginate(
-        page=page, per_page=10, error_out=False
-    )
+    pagination = (Order.query.join(Customer).filter(Customer.user_id == user.id)
+                  .order_by(Order.created.desc()).paginate(page=page, per_page=10, error_out=False))
 
     return render_template("orders.html", orders=pagination.items, pagination=pagination)
 
@@ -57,22 +55,22 @@ def order_new():
 @login_required
 def order_edit(id):
     user = g.user
-    customers = Customer.query.filter(Customer.user_id == user.id).all()
+    form = OrderForm()
 
-    order = Order.query.join(Customer).filter(
-        Order.id == id, 
-        Customer.user_id == current_user().id
-    ).first_or_404()
+    if request.method == "post":
+        order = Order.query.join(Customer).filter(Customer.user_id == user.id, Order.id == id).first_or_404()
 
-    form = OrderForm(order_id=order.id,obj=order)  # I Populate the fields(because of SelectField)
-    form.customer_id.choices = [(c.id, c.name) for c in customers]
+        form = OrderForm(order_id=order.id,obj=order)
 
-    if form.validate_on_submit():
+        # SelectField options
+        form.customer_id.choices = [(c.id, c.name) for c in Customer.query.filter(Customer.user_id == user.id).all()]
         form.populate_obj(order)
-        db.session.commit()
+        
+        if form.validate_on_submit():
+            db.session.commit()
 
-        flash('Order updated successfully!', 'success')
-        return redirect(url_for('orders.orders'))
+            flash('Order updated successfully!', 'success')
+            return redirect(url_for('orders.orders'))
 
     return render_template("order_form.html", form=form, edit_form=True, order_id=id)
 
@@ -82,10 +80,7 @@ def order_edit(id):
 def order_delete(id):
     user = g.user
     if request.method == "post":
-        order = Order.query.join(Customer).filter(
-            Order.id == id, 
-            Customer.user_id == user.id
-        ).first_or_404()
+        order = Order.query.join(Customer).filter(Customer.user_id == user.id, Order.id == id).first_or_404()
 
         db.session.delete(order)
         db.session.commit()
