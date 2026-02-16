@@ -19,7 +19,7 @@ class CustomerCreate(BaseForm):
         customer = Customer.query.filter_by(email=email.data).first()
 
         if customer:
-            raise ValidationError("Email already registered to a user")
+            raise ValidationError("Email is connected to another customer")
 
 
 class CustomerEdit(BaseForm):

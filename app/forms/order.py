@@ -5,7 +5,7 @@ from wtforms.validators import DataRequired, Length, ValidationError
 from app.models import Order
 
 
-class OrderForm(FlaskForm):
+class BaseForm(FlaskForm):
     order_number = StringField('Order ID', validators=[DataRequired(), Length(min=2, max=100)])
     customer_id = SelectField('Customer ID', coerce=int, validators=[DataRequired()])
     product = StringField('Product', validators=[DataRequired(), Length(max=200)])
@@ -17,13 +17,29 @@ class OrderForm(FlaskForm):
         ('completed', 'Completed'),
         ('cancelled', 'Cancelled'),
     ])
+
+
+class OrderCreate(BaseForm):    
     submit = SubmitField('Save Order')
+
+    def validate_order_number(self, order_number):
+        order = Order.query.filter_by(order_number=order_number.data).first()
+              
+        if order:
+            raise ValidationError('Order number already registered. Please use a different order number.')
+
+
+class OrderEdit(BaseForm):
+    submit = SubmitField("Update Order")
 
     def __init__(self, order_id=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.order_id = order_id
 
     def validate_order_number(self, order_number):
+        if not order_number:
+            return
+
         order = Order.query.filter(Order.order_number == order_number.data, Order.id != self.order_id).first()
               
         if order:
