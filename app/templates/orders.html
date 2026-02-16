@@ -41,8 +41,8 @@
                 <th>Date</th>
                 <th>Actions</th>
             </thead>
-            <tbody>
-                {% for order in orders %}
+            {% for order in orders %}
+                <tbody>
                     <td>{{ order.order_number|string|title }}</td>
                     <td>{{ order.customer_id }}</td>
                     <td>{{ order.product }}</td>
@@ -51,29 +51,24 @@
                     <td>{{ order.status or N/A}}</td>
                     <td>{{ order.created.strftime("%m-%d-%Y") }}</td>
                     <td>
-                        <a
-                        href="{{ url_for('orders.order_edit', id=order.id) }}"
-                        class="btn btn-sm btn-primary"
-                        >
+                        <a href="{{ url_for('orders.order_edit', id=order.id) }}" class="btn btn-sm btn-primary">
                         ✏️ Edit
                         </a>
-                        <form
-                        style="margin-top: 5%"
-                        action="{{ url_for('orders.order_delete', id=order.id) }}"
-                        method="POST"
-                        onsubmit="return confirm('Are you sure you want to delete order {{ order.order_number|string|title }}?');"
-                        >
+                        <form style="margin-top: 5%" action="{{ url_for('orders.order_delete', id=order.id) }}" method="POST"
+                        onsubmit="return confirm('Are you sure you want to delete order {{ order.order_number|string|title }}?');">
                         <button type="submit" class="btn btn-sm btn-danger">
                             🗑️ Delete
                         </button>
                         </form>
                     </td>
-                {% else %}
+                </tbody>
+            {% else %}
+                <tbody>
                     <td class="text-muted text-center" colspan="8">
                         No orders yet. Click "Add New Order" to get started
                     </td>
-                {% endfor %}
-            </tbody>
+                </tbody>
+            {% endfor %}
         </table>
     </div>
 

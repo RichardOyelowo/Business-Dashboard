@@ -29,6 +29,7 @@
     <div class="table-responsive">
         <table class="table">
             <thead>
+                <th>Id</th>
                 <th>Name</th>
                 <th>Email</th>
                 <th>Phone</th>
@@ -38,23 +39,18 @@
             </thead>
             {% for customer in customers %}
                 <tbody>
+                    <td>{{ customer.id }}</td>
                     <td>{{ customer.name|string|title }}</td>
                     <td>{{ customer.email }}</td>
                     <td>{{ customer.phone or N/A }}</td>
                     <td>{{ customer.company|string|title or N/A }}</td>
                     <td>{{ customer.created_at.strftime("%m-%d-%Y") }}</td>
                     <td>
-                        <a
-                            class="btn btn-sm btn-primary"
-                            href="{{ url_for('customers.customer_edit', id=customer.id) }}"
-                        >
+                        <a class="btn btn-sm btn-primary" href="{{ url_for('customers.customer_edit', id=customer.id) }}">
                             ✏️ Edit
                         </a>
-                        <form style="margin-top: 5%;"
-                            action="{{ url_for('customers.customer_delete', id=customer.id) }}"
-                            method="post"
-                            onsubmit="return confirm('Are you sure you want to delete {{ customer.name }}?');"
-                        >
+                        <form style="margin-top: 5%;" action="{{ url_for('customers.customer_delete', id=customer.id) }}" method="post"
+                            onsubmit="return confirm('Are you sure you want to delete {{ customer.name }}?');">
                             <button type="submit" class="btn btn-sm btn-danger">
                             🗑️ Delete
                             </button>
