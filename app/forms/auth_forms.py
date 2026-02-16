@@ -28,11 +28,12 @@ class Login(FlaskForm):
 
 class ForgotPassword(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Length(max=100)])
-    submit = SubmitField('Send Email')
+    submit = SubmitField('Send Reset Email')
 
 
 class ResetPassword(FlaskForm):
-    password = PasswordField('Password', validators=[DataRequired(), Length(min=6, max=20), 
+    password = PasswordField('New Password', validators=[DataRequired(), Length(min=6, max=20), 
         Regexp(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).*$', 
-            message='Password must contain at least 1 letter, 1 number and 1 symbol')])
+            message='Password must contain at least 6 characters with 1 letter, 1 number and 1 symbol')])
     confirmation = PasswordField('Retype Password', validators=[DataRequired(), EqualTo("password", message="Password doesn't match.")])
+    submit = SubmitField("Update Password")
