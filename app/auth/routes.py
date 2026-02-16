@@ -1,8 +1,10 @@
 from app.extensions import db
-from app.forms import SignUp, Login
 from .decorators import login_required
+from itsdangerous import URLSafeTimedSerializer
+from app.mail_utils import send_reset_email
 from app.models import User, hash_password, validate_password
-from flask import Blueprint, render_template, redirect, session, url_for, flash
+from app.forms import SignUp, Login, ForgotPassword, ResetPassword
+from flask import Blueprint, render_template, redirect, request, session, url_for, flash, current_app
 
 
 auth = Blueprint('auth', __name__)
@@ -13,15 +15,15 @@ def signup():
 
     if form.validate_on_submit():
         user = User(
-            name = form.name.data.lower(),
-            email = form.email.data.lower(),
+            name = (form.name.data or "").strip(),
+            email = (form.email.data).lower(),
             password_hash = hash_password(form.password.data)
         )
         db.session.add(user)
         db.session.commit()
-        
-            
-        return redirect(url_for("auth.login"))
+       
+        session["user_id"] = user.id
+        return redirect(url_for("index.index"))
 
     return render_template("auth/signup.html", form=form)
 
@@ -31,11 +33,12 @@ def login():
     form = Login()
 
     if form.validate_on_submit():
-        user = User.query.filter(User.email == form.email.data.lower()).first()
+        email = form.email.data.lower()
+        user = User.query.filter(User.email == email).first()
 
         if user and validate_password(user.password_hash, form.password.data):
             session["user_id"] = user.id
-            return redirect(url_for("customers.customers"))
+            return redirect(url_for("index.index"))
         
         flash('Invalid login info', 'info')
 
@@ -48,3 +51,54 @@ def logout():
     session.clear()
 
     return redirect(url_for("auth.login"))
+
+
+@auth.route("/forgot_password", methods=["GET", "POST"])
+def forgot_password():
+    form = ForgotPassword()
+
+    if form.validate_on_submit():
+        email = form.email.data.strip()
+
+        if email is not None:
+            user = User.query.filter(User.email == email.lower()).first()
+
+            if user: # Send email only if user exists
+                s = URLSafeTimedSerializer(current_app.secret_key)
+                token = s.dumps(user.id, salt="password-reset-salt")
+                reset_link = url_for("auth.reset_password", token=token, _external=True)
+
+                try:
+                    send_reset_email(user.email,reset_link)
+                except Exception as e:
+                    return render_template("auth/forgot_password.html", form_type="error",form=form, error="An Error Occured. Try Again Later.")
+
+            return render_template("auth/forgot_password.html", form_type="sent_or_not_found")
+    
+    return render_template("auth/forgot_password.html", form_type="forgot", form=form)
+    
+
+@auth.route("/reset_password/<token>", methods=["GET", "POST"])
+def reset_password(token):
+    form = ResetPassword()
+
+    s = URLSafeTimedSerializer(current_app.secret_key)
+    try:
+        id = s.loads(token, salt="password-reset-salt", max_age=3600)
+    except (BadSignature, SignatureExpired):
+        return render_template("auth/reset_password.html", token=token, form_type="error")
+
+    if form.validate_on_submit():
+        user = User.query.filter(User.id == id).first()
+
+        if not user:
+            return render_template("auth/reset_password.html", token=token, form_type="error")
+
+        password = form.password.data.strip()
+        user.password = hash_password(password)
+        db.session.commit()
+        
+        return render_template("auth/reset_password.html", token=token, form_type="success")
+
+    return render_template("auth/reset_password.html", token=token, form_type="reset", form=form)
+
