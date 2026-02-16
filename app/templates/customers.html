@@ -36,8 +36,8 @@
                 <th>Created</th>
                 <th>Actions</th>
             </thead>
-            <tbody>
-                {% for customer in customers %}
+            {% for customer in customers %}
+                <tbody>
                     <td>{{ customer.name|string|title }}</td>
                     <td>{{ customer.email }}</td>
                     <td>{{ customer.phone or N/A }}</td>
@@ -60,12 +60,14 @@
                             </button>
                         </form>
                     </td>
-                {% else %}
+                </tbody>
+            {% else %}
+                <tbody>
                     <td class="text-muted text-center" colspan="6">
                         No customers yet. Click "Add New Customer" to get started
                     </td>
-                {% endfor %}
-            </tbody>
+                </tbody>
+            {% endfor %}
         </table>
     </div>
 
