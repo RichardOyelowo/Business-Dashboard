@@ -49,7 +49,7 @@ def customer_new():
 @login_required
 def customer_edit(id):
     user = g.user
-    customer = Customer.query.filter(Customer.id == id, Customer.user_id == user.id).first_or_404(id)
+    customer = Customer.query.filter(Customer.id == id, Customer.user_id == user.id).first_or_404()
     
     form = CustomerEdit(obj=customer, customer=customer)
     
@@ -67,7 +67,7 @@ def customer_edit(id):
 @login_required
 def customer_delete(id):
     user = g.user
-    customer = Customer.query.filter_by(user_id=user.id).first_or_404(id)
+    customer = Customer.query.filter_by(user_id=user.id).first_or_404()
 
     if Order.query.filter_by(customer_id=customer.id).first():
         flash("Cannot delete customer with existing orders.", "danger")

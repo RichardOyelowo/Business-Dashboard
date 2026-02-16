@@ -2,7 +2,7 @@ from os import wait
 from flask import Blueprint, render_template, redirect, request, flash, url_for, g
 from app.auth import login_required
 from app.models.customer import Customer
-from app.forms.order import OrderForm
+from app.forms.order import OrderCreate, OrderEdit
 from app.models.order import Order
 from app.extensions import db
 
@@ -24,9 +24,9 @@ def orders():
 @orders_bp.route("/new", methods=["GET", "POST"])
 @login_required
 def order_new():
-    form = OrderForm()
-    # for order's form customer dropdown
     user = g.user
+
+    form = OrderCreate(user_id=user.id)
     form.customer_id.choices = [(c.id, c.name) for c in Customer.query.filter(Customer.user_id == user.id).all()]
 
     if len(form.customer_id.choices) == 0:
@@ -55,22 +55,16 @@ def order_new():
 @login_required
 def order_edit(id):
     user = g.user
-    form = OrderForm()
+    order = Order.query.join(Customer).filter(Customer.user_id == user.id, Order.id == id).first_or_404()
 
-    if request.method == "post":
-        order = Order.query.join(Customer).filter(Customer.user_id == user.id, Order.id == id).first_or_404()
+    form = OrderEdit(obj=order, order_id=order.id, user_id=user.id)
 
-        form = OrderForm(order_id=order.id,obj=order)
-
-        # SelectField options
-        form.customer_id.choices = [(c.id, c.name) for c in Customer.query.filter(Customer.user_id == user.id).all()]
+    if form.validate_on_submit():
         form.populate_obj(order)
-        
-        if form.validate_on_submit():
-            db.session.commit()
+        db.session.commit()
 
-            flash('Order updated successfully!', 'success')
-            return redirect(url_for('orders.orders'))
+        flash('Order updated successfully!', 'success')
+        return redirect(url_for('orders.orders'))
 
     return render_template("order_form.html", form=form, edit_form=True, order_id=id)
 
@@ -79,9 +73,9 @@ def order_edit(id):
 @login_required
 def order_delete(id):
     user = g.user
-    if request.method == "post":
-        order = Order.query.join(Customer).filter(Customer.user_id == user.id, Order.id == id).first_or_404()
+    order = Order.query.join(Customer).filter(Customer.user_id == user.id, Order.id == id).first_or_404()
 
+    if order:
         db.session.delete(order)
         db.session.commit()
 
