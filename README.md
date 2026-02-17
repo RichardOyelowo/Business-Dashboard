@@ -1,6 +1,6 @@
 <div align=center>
 
-# Business Dashboard
+# <img src="images/logo.svg" alt="Business Dashboard Logo" style="vertical-align: middle;"> Business Dashboard
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)
@@ -20,6 +20,10 @@ Business Dashboard is a CRUD app I built because I needed something simple to ma
 The app handles the basics well: create customers, track orders, see your revenue at a glance. Each user's data is completely isolated—you only see your own customers and orders. Pagination works, forms validate properly, and password resets actually send emails instead of just logging to console.
 
 Built this to understand Flask blueprints, SQLAlchemy relationships, and how to structure a multi-user app without making a mess. It's not trying to be Shopify, but it works reliably for small businesses or freelancers who need to track client work.
+
+---
+
+![Dashboard Screenshot](images/image.png)
 
 ---
 
