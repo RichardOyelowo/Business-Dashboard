@@ -23,7 +23,7 @@ Built this to understand Flask blueprints, SQLAlchemy relationships, and how to 
 
 ---
 
-![Dashboard Screenshot](images/image.png)
+![Dashboard Screenshot](images/image.webp)
 
 ---
 
