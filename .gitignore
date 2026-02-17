@@ -7,8 +7,6 @@ __pycache__/
 venv/
 env/
 ENV/
-config/
-*config
 
 # Flask
 instance/
@@ -24,5 +22,3 @@ instance/
 # Environment
 .env
 .env.*
-config
-config.py
