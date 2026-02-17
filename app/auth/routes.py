@@ -35,6 +35,7 @@ def login():
     if form.validate_on_submit():
         email = form.email.data.lower()
         user = User.query.filter(User.email == email).first()
+        print(f"saved: {user.password_hash}")
 
         if user and validate_password(user.password_hash, form.password.data):
             session["user_id"] = user.id
@@ -80,22 +81,23 @@ def forgot_password():
 
 @auth.route("/reset_password/<token>", methods=["GET", "POST"])
 def reset_password(token):
-    form = ResetPassword()
-
     s = URLSafeTimedSerializer(current_app.secret_key)
+
     try:
         id = s.loads(token, salt="password-reset-salt", max_age=3600)
     except (BadSignature, SignatureExpired):
         return render_template("auth/reset_password.html", token=token, form_type="error")
+        
+    user = User.query.filter(User.id == id).first()
+    if not user:
+        return render_template("auth/reset_password.html", token=token, form_type="error")
+
+    form = ResetPassword()
 
     if form.validate_on_submit():
-        user = User.query.filter(User.id == id).first()
-
-        if not user:
-            return render_template("auth/reset_password.html", token=token, form_type="error")
-
         password = form.password.data.strip()
-        user.password = hash_password(password)
+        user.password_hash = hash_password(password)
+        
         db.session.commit()
         
         return render_template("auth/reset_password.html", token=token, form_type="success")
