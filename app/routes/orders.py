@@ -1,9 +1,8 @@
 from os import wait
 from flask import Blueprint, render_template, redirect, request, flash, url_for, g
 from app.auth import login_required
-from app.models.customer import Customer
-from app.forms.order import OrderCreate, OrderEdit
-from app.models.order import Order
+from app.models import Customer, Order
+from app.forms import OrderCreate, OrderEdit
 from app.extensions import db
 
 

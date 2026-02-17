@@ -1,8 +1,7 @@
 from app.extensions import db
-from app.models.order import Order
-from app.models.customer import Customer
+from app.models import Order, Customer
 from app.auth import login_required
-from app.forms.customer import CustomerCreate, CustomerEdit
+from app.forms import CustomerCreate, CustomerEdit
 from flask import Blueprint, render_template, redirect, request, flash, url_for, g
 
 
@@ -67,15 +66,16 @@ def customer_edit(id):
 @login_required
 def customer_delete(id):
     user = g.user
-    customer = Customer.query.filter_by(user_id=user.id).first_or_404()
 
-    if Order.query.filter_by(customer_id=customer.id).first():
+    if Customer.query.join(Order, Order.customer_id == Customer.id).filter(Order.customer_id  == id).first():
         flash("Cannot delete customer with existing orders.", "danger")
 
         return redirect(url_for("customers.customers"))
 
-    db.session.delete(customer)
-    db.session.commit()
+    customer = Customer.query.filter_by(id=id).first_or_404()
+    if customer:
+        db.session.delete(customer)
+        db.session.commit()
 
     flash('Customer deleted successfully!', 'success')
-    return redirect(url_for('customers'))
+    return redirect(url_for('customers.customers'))
