@@ -1,106 +1,96 @@
 <!DOCTYPE html>
+<html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        
         <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-
         <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon/favicon-16x16.png') }}">
         <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon/favicon-32x32.png') }}">
         <link rel="icon" type="image/png" sizes="96x96" href="{{ url_for('static', filename='favicon/favicon-96x96.png') }}">
         <link rel="shortcut icon" href="{{ url_for('static', filename='favicon/favicon.ico') }}">
         <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicon/apple-touch-icon.png') }}">
         <link rel="manifest" href="{{ url_for('static', filename='favicon/site.webmanifest') }}">
-
-        <meta name="theme-color" content="#94dfec">
-        <meta name="apple-mobile-web-app-title" content="Dashboard">
-        <title>Business Dashboard: {% block title %}{% endblock %}</title>
+        <meta name="theme-color" content="#111827">
+        <title>Business Dashboard{% block title %}{% endblock %}</title>
     </head>
     <body>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-            <div class="container-fluid">
-                <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index.index') }}">
-                    <img src="{{ url_for('static', filename='logo.svg') }}" alt="Business Dashboard" 
-                        height="40" style="vertical-align: middle;" class="me-2">
-                    <span class="fw-bold" style="color: var(--text-heading);">Business Dashboard</span>
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    {% if current_user %}
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('customers.customers') }}">👥 Customers</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('orders.orders') }}">📦 Orders</a>
-                            </li>
-                        </ul>
-                        <ul class="navbar-nav ms-auto">
-                            <li class="nav-item me-2">
-                                <a id="theme_button" type="button">
-                                    <span class="nav-link theme-icon"></span>
-                                </a>
-                            </li>
-                            <li>
-                              <form action="{{ url_for('auth.logout') }}" method="post">
-                                    <button type="submit" class="ms-auto btn btn-primary">Logout</button>
-                              </form>
-                            </li>            
-                        </ul>
-                    {% else %}
-                        <div id="theme_button" class="ms-auto">
-                            <button type="button">
-                                <span class="theme-icon"></span>
-                            </button>
-                        </div>
-                    {% endif %}
+        <header class="topbar">
+            <nav class="navbar navbar-expand-lg">
+                <div class="container-fluid page-shell">
+                    <a class="brand" href="{{ url_for('index.dashboard') if current_user else url_for('index.index') }}">
+                        <img src="{{ url_for('static', filename='logo.svg') }}" alt="Business Dashboard" height="34">
+                        <span>Business Dashboard</span>
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        {% if current_user %}
+                            <ul class="navbar-nav app-nav">
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('index.dashboard') }}">Dashboard</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('customers.customers') }}">Customers</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('orders.orders') }}">Orders</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ url_for('imports.import_home') }}">Import</a></li>
+                            </ul>
+                            <div class="navbar-actions">
+                                <button id="theme_button" class="icon-button" type="button" aria-label="Toggle theme">
+                                    <span class="theme-icon"></span>
+                                </button>
+                                <form action="{{ url_for('auth.logout') }}" method="post">
+                                    <button type="submit" class="btn btn-outline-secondary">Logout</button>
+                                </form>
+                            </div>
+                        {% else %}
+                            <div class="navbar-actions ms-auto">
+                                <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
+                                <a class="btn btn-primary" href="{{ url_for('auth.signup') }}">Get Started</a>
+                                <button id="theme_button" class="icon-button" type="button" aria-label="Toggle theme">
+                                    <span class="theme-icon"></span>
+                                </button>
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
-            </div>
-        </nav>
+            </nav>
+        </header>
 
-        <div class="container mt-4 mb-5">
+        <main class="page-shell main-content">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
+                    <div class="flash-stack">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
                 {% endif %}
             {% endwith %}
 
             {% block content %}{% endblock %}
-        </div>
+        </main>
 
-        <footer class="mt-auto py-3 text-center">
-            <div class="container">
-                <p class="text-muted mb-0">Built with love for development by Richard Oyelowo</p>
+        <footer class="site-footer">
+            <div class="page-shell footer-inner">
+                <span>Business Dashboard</span>
+                <span>Customer, order, and revenue management for small teams.</span>
             </div>
         </footer>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        
-        <!----- Theme Toggling ----->
-        <script>   
-
-            let themeToggle = document.getElementById("theme_button");
-
-            // Check for saved theme preference or default to dark
-            const currentTheme = localStorage.getItem("theme") || "dark";
+        <script>
+            const themeToggle = document.getElementById("theme_button");
+            const currentTheme = localStorage.getItem("theme") || "light";
             document.documentElement.setAttribute("data-theme", currentTheme);
 
-            themeToggle.addEventListener("click", () => {
-            const theme = document.documentElement.getAttribute("data-theme");
-            const newTheme = theme === "dark" ? "light" : "dark";
-
-            document.documentElement.setAttribute("data-theme", newTheme);
-            localStorage.setItem("theme", newTheme);
+            themeToggle?.addEventListener("click", () => {
+                const theme = document.documentElement.getAttribute("data-theme");
+                const newTheme = theme === "dark" ? "light" : "dark";
+                document.documentElement.setAttribute("data-theme", newTheme);
+                localStorage.setItem("theme", newTheme);
             });
         </script>
     </body>
 </html>
-

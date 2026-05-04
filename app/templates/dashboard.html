@@ -1,0 +1,226 @@
+{% extends "layout.html" %}
+
+{% block title %} | Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-title">
+        <h1>Dashboard</h1>
+        <p>Monitor revenue, customers, and order movement from one place.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{{ url_for('customers.customer_new') }}" class="btn btn-primary">Add Customer</a>
+        <a href="{{ url_for('orders.order_new') }}" class="btn btn-success">Add Order</a>
+        <a href="{{ url_for('imports.import_home') }}" class="btn btn-outline-primary">Import</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-4 col-xl-2">
+        <div class="metric-card">
+            <span>Total Revenue</span>
+            <strong>${{ "%.2f"|format(total_revenue) }}</strong>
+            <small>Across all orders</small>
+        </div>
+    </div>
+    <div class="col-md-4 col-xl-2">
+        <div class="metric-card">
+            <span>Average Order</span>
+            <strong>${{ "%.2f"|format(average_order_value) }}</strong>
+            <small>Revenue per order</small>
+        </div>
+    </div>
+    <div class="col-md-4 col-xl-2">
+        <div class="metric-card">
+            <span>Customers</span>
+            <strong>{{ total_customers }}</strong>
+            <small>Stored accounts</small>
+        </div>
+    </div>
+    <div class="col-md-4 col-xl-2">
+        <div class="metric-card">
+            <span>Orders</span>
+            <strong>{{ total_orders }}</strong>
+            <small>Total records</small>
+        </div>
+    </div>
+    <div class="col-md-4 col-xl-2">
+        <div class="metric-card">
+            <span>Pending</span>
+            <strong>{{ pending_orders }}</strong>
+            <small>Needs action</small>
+        </div>
+    </div>
+    <div class="col-md-4 col-xl-2">
+        <div class="metric-card">
+            <span>Completed</span>
+            <strong>{{ completed_orders }}</strong>
+            <small>Closed orders</small>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="panel">
+            <div class="panel-header">
+                <div>
+                    <h2>Revenue Over Time</h2>
+                    <p>Daily revenue totals from imported and manual orders.</p>
+                </div>
+            </div>
+            <div class="chart-box">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="panel">
+            <div class="panel-header">
+                <div>
+                    <h2>Order Status</h2>
+                    <p>Current workload distribution.</p>
+                </div>
+            </div>
+            <div class="chart-box">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="panel">
+            <div class="panel-header">
+                <div>
+                    <h2>Customer Growth</h2>
+                    <p>New customer records by day.</p>
+                </div>
+            </div>
+            <div class="chart-box">
+                <canvas id="customerChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="panel">
+            <div class="panel-header">
+                <div>
+                    <h2>Recent Orders</h2>
+                    <p>Latest operational activity.</p>
+                </div>
+                <a href="{{ url_for('orders.orders') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Order</th>
+                            <th>Customer</th>
+                            <th>Status</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in recent_orders %}
+                            <tr>
+                                <td>{{ order.order_number }}</td>
+                                <td>{{ order.customer.name }}</td>
+                                <td><span class="status-badge status-{{ order.status }}">{{ order.status }}</span></td>
+                                <td>${{ "%.2f"|format(order.total_amount) }}</td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="4"><div class="empty-state">No orders yet.</div></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="panel">
+            <div class="panel-header">
+                <div>
+                    <h2>Top Customers</h2>
+                    <p>Ranked by total order value.</p>
+                </div>
+            </div>
+            <div class="rank-list">
+                {% for name, total in top_customers %}
+                    <div class="rank-row">
+                        <span>{{ name }}</span>
+                        <strong>${{ "%.2f"|format(total) }}</strong>
+                    </div>
+                {% else %}
+                    <div class="empty-state">No customer revenue yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const chartData = {{ chart_data|tojson }};
+    const textColor = getComputedStyle(document.documentElement).getPropertyValue("--text-main").trim();
+    const gridColor = getComputedStyle(document.documentElement).getPropertyValue("--border-color").trim();
+
+    function axisOptions() {
+        return {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { ticks: { color: textColor }, grid: { color: gridColor } },
+                y: { beginAtZero: true, ticks: { color: textColor }, grid: { color: gridColor } }
+            },
+            plugins: { legend: { labels: { color: textColor } } }
+        };
+    }
+
+    new Chart(document.getElementById("revenueChart"), {
+        type: "bar",
+        data: {
+            labels: chartData.revenue.labels,
+            datasets: [{
+                label: "Revenue",
+                data: chartData.revenue.values,
+                backgroundColor: "#2563eb",
+                borderRadius: 6
+            }]
+        },
+        options: axisOptions()
+    });
+
+    new Chart(document.getElementById("statusChart"), {
+        type: "doughnut",
+        data: {
+            labels: chartData.statuses.labels,
+            datasets: [{
+                data: chartData.statuses.values,
+                backgroundColor: ["#d97706", "#2563eb", "#0f9f6e", "#dc2626"]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: "bottom", labels: { color: textColor } } }
+        }
+    });
+
+    new Chart(document.getElementById("customerChart"), {
+        type: "line",
+        data: {
+            labels: chartData.customers.labels,
+            datasets: [{
+                label: "New Customers",
+                data: chartData.customers.values,
+                borderColor: "#0f9f6e",
+                backgroundColor: "rgba(15, 159, 110, 0.16)",
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: axisOptions()
+    });
+</script>
+{% endblock %}

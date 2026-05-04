@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+
+{% block title %} | Import Result{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-title">
+        <h1>{{ import_type|title }} Import</h1>
+        {% if errors %}
+            <p>Nothing was imported. Fix the rows below and upload again.</p>
+        {% else %}
+            <p>{{ imported_count }} records were imported and are now included in dashboard reporting.</p>
+        {% endif %}
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-outline-primary" href="{{ url_for('imports.import_home') }}">Import More</a>
+        <a class="btn btn-primary" href="{{ url_for('index.dashboard') }}">Dashboard</a>
+    </div>
+</div>
+
+{% if errors %}
+    <div class="panel">
+        <div class="panel-header">
+            <div>
+                <h2>Validation Errors</h2>
+                <p>Imports are all-or-nothing to keep data consistent.</p>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Row</th>
+                        <th>Error</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for error in errors %}
+                        <tr>
+                            <td>{{ error.row }}</td>
+                            <td>{{ error.message }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% else %}
+    <div class="panel">
+        <h2>Import Complete</h2>
+        <p class="text-muted mb-0">Your customer and order analytics will reflect the new records immediately.</p>
+    </div>
+{% endif %}
+{% endblock %}

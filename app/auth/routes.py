@@ -1,6 +1,6 @@
 from app.extensions import db
 from .decorators import login_required
-from itsdangerous import URLSafeTimedSerializer
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from app.mail_utils import send_reset_email
 from app.models import User, hash_password, validate_password
 from app.forms import SignUp, Login, ForgotPassword, ResetPassword
@@ -21,9 +21,9 @@ def signup():
         )
         db.session.add(user)
         db.session.commit()
-       
+
         session["user_id"] = user.id
-        return redirect(url_for("index.index"))
+        return redirect(url_for("index.dashboard"))
 
     return render_template("auth/signup.html", form=form)
 
@@ -35,11 +35,10 @@ def login():
     if form.validate_on_submit():
         email = form.email.data.lower()
         user = User.query.filter(User.email == email).first()
-        print(f"saved: {user.password_hash}")
 
         if user and validate_password(user.password_hash, form.password.data):
             session["user_id"] = user.id
-            return redirect(url_for("index.index"))
+            return redirect(url_for("index.dashboard"))
         
         flash('Invalid login info', 'info')
 

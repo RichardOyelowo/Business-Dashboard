@@ -1,4 +1,4 @@
-<div align=center>
+<div align="center">
 
 # <img src="images/logo.svg" alt="Business Dashboard Logo" style="vertical-align: middle;">
 
@@ -6,20 +6,30 @@
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)
 [![Python](https://img.shields.io/badge/Python-3.x-blue.svg)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-3.x-black.svg)](https://flask.palletsprojects.com/)
-[![Status](https://img.shields.io/badge/Status-Active-success.svg)]()
+![Status](https://img.shields.io/badge/status-MVP-success.svg)
 
-A production-ready customer and order management system built with Flask and SQLAlchemy. Multi-user support, role-based data isolation, password reset via email, and a clean dashboard interface.
+A Flask business dashboard for customers, orders, imports, and revenue insight.
+
+</div>
 
 ---
-</div>
 
 ## Description
 
-Business Dashboard is a CRUD app I built because I needed something simple to manage customers and orders without the bloat of enterprise software. Most business management tools are either too complex (Salesforce, anyone?) or too simplistic (glorified spreadsheets). I wanted something in between: a straightforward web interface with user accounts, email notifications, and actual data validation.
+Business Dashboard is a small business management app I built because I wanted something more useful than a spreadsheet but not as heavy as a full CRM.
 
-The app handles the basics well: create customers, track orders, see your revenue at a glance. Each user's data is completely isolated—you only see your own customers and orders. Pagination works, forms validate properly, and password resets actually send emails instead of just logging to console.
+The app gives users a place to manage customers, track orders, import existing records, and see business activity from a private dashboard.
 
-Built this to understand Flask blueprints, SQLAlchemy relationships, and how to structure a multi-user app without making a mess. It's not trying to be Shopify, but it works reliably for small businesses or freelancers who need to track client work.
+The current version has:
+
+- A public homepage for visitors
+- Auth pages for signup, login, logout, and password reset
+- A logged-in dashboard with charts and metrics
+- Customer and order management
+- CSV and JSON import for bulk data
+- User-specific data isolation
+
+Each user only sees their own customers and orders.
 
 ---
 
@@ -27,741 +37,660 @@ Built this to understand Flask blueprints, SQLAlchemy relationships, and how to 
 
 ---
 
-## Table of Contents
+## Project Goal
 
-- [Quick Start](#quick-start)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Installation & Setup](#installation--setup)
-  - [Prerequisites](#prerequisites)
-  - [Setup Steps](#setup-steps)
-  - [Environment Variables](#environment-variables)
-- [Configuration](#configuration)
-  - [Required Variables](#required-variables)
-  - [Config Classes](#config-classes)
-- [Usage](#usage)
-  - [Creating an Account](#creating-an-account)
-  - [Managing Customers](#managing-customers)
-  - [Creating Orders](#creating-orders)
-  - [Dashboard Overview](#dashboard-overview)
-- [Project Structure](#project-structure)
-- [Database Schema](#database-schema)
-  - [Tables](#tables)
-  - [Relationships](#relationships)
-- [Key Routes](#key-routes)
-  - [Public Routes](#public-routes-no-login-required)
-  - [Protected Routes](#protected-routes-login-required)
-- [Security Features](#security-features)
-- [Architecture Decisions](#architecture-decisions)
-  - [Blueprint Organization](#blueprint-organization)
-  - [Form Validation Strategy](#form-validation-strategy)
-  - [Data Isolation](#data-isolation)
-  - [User Loading Mechanism](#user-loading-mechanism)
-- [Production Deployment](#production-deployment)
-  - [Gunicorn Configuration](#gunicorn-configuration)
-  - [Reverse Proxy Setup](#reverse-proxy-setup-nginx)
-  - [systemd Service](#systemd-service)
-- [What I Learned](#what-i-learned)
-- [Troubleshooting](#troubleshooting)
-- [License](#license)
+The goal is simple:
 
----
+> Sign up, add or import customers, add or import orders, then see useful business insight.
 
-## Quick Start
-```bash
-# Clone and setup
-git clone <repository-url>
-cd business-dashboard
-python -m venv venv
-source venv/bin/activate  # or venv\Scripts\activate on Windows
-pip install -r requirements.txt
+I wanted the MVP to answer these questions quickly:
 
-# Setup environment variables
-cat > .env << EOF
-SECRET_KEY=$(python -c "import secrets; print(secrets.token_hex(32))")
-DATABASE_URL=sqlite:///instance/business.db
-FLASK_ENV=development
-MAIL_SERVER=smtp.gmail.com
-BUSINESS_DASHBOARD_EMAIL=your-email@gmail.com
-BUSINESS_DASHBOARD_EMAIL_PASSWORD=your-app-password
-EOF
+1. Who are my customers?
+2. What orders do I have?
+3. How much revenue is in the system?
+4. Which orders are pending?
+5. Which customers are bringing in the most revenue?
 
-# Initialize database and run
-flask db upgrade
-python run.py
-# Visit http://localhost:5000
-```
+That is why the app keeps orders connected to customers instead of treating them as separate records.
 
 ---
 
 ## Features
 
-- ✅ **Multi-user authentication** – Each user has isolated customer/order data
-- ✅ **Customer management** – Full CRUD with email validation
-- ✅ **Order tracking** – Link orders to customers, track status and revenue
-- ✅ **Dashboard stats** – Total customers, orders, pending orders, and revenue at a glance
-- ✅ **Password reset via email** – Secure token-based recovery (1-hour expiry)
-- ✅ **Pagination** – Handle large datasets without breaking the UI
-- ✅ **Form validation** – WTForms with custom validators (duplicate email checks, order number conflicts)
-- ✅ **Data isolation** – Users can only access their own data (enforced at the query level)
-- ✅ **Foreign key protection** – Can't delete customers who have existing orders
-- ✅ **Responsive design** – Works on mobile and desktop
+### Public Site
+
+- Public homepage at `/`
+- Product explanation
+- Login and signup calls to action
+- Dashboard preview section
+- Import workflow explanation
+
+### Authentication
+
+- Signup
+- Login
+- Logout
+- Password reset email
+- Session based user loading
+- Protected dashboard and CRUD routes
+
+### Customers
+
+- Create customer
+- View customers
+- Edit customer
+- Delete customer when they have no orders
+- Store name, email, phone, company, and created date
+
+### Orders
+
+- Create order
+- View orders
+- Edit order
+- Delete order
+- Track order number, customer, product, quantity, price, status, and date
+- Calculate order total from quantity and price
+
+### Dashboard
+
+- Total revenue
+- Average order value
+- Total customers
+- Total orders
+- Pending orders
+- Completed orders
+- Revenue over time chart
+- Orders by status chart
+- Customer growth chart
+- Recent orders
+- Top customers by revenue
+
+### Imports
+
+- Customer CSV import
+- Customer JSON import
+- Order CSV import
+- Order JSON import
+- Order imports match customers by email
+- Order imports can create missing customers when customer details are included
+- Imports are all-or-nothing so bad rows do not create partial data
 
 ---
 
 ## Tech Stack
 
 | Layer | Technology | Purpose |
-|-------|------------|---------|
-| **Backend** | Python, Flask | Web framework |
-| **Database** | SQLAlchemy, SQLite | ORM and persistent storage |
-| **Migrations** | Flask-Migrate (Alembic) | Database schema versioning |
-| **Forms** | Flask-WTF, WTForms | Form handling and CSRF protection |
-| **Authentication** | Werkzeug, itsdangerous | Password hashing, secure tokens |
-| **Email** | Flask-Mail | Password reset emails |
-| **Frontend** | Jinja2, Bootstrap | Templates and styling |
+| --- | --- | --- |
+| Backend | Python, Flask | Web app framework |
+| Database | SQLAlchemy, SQLite | ORM and persistence |
+| Migrations | Flask-Migrate, Alembic | Schema changes |
+| Forms | Flask-WTF, WTForms | Forms, validation, CSRF |
+| Auth | Werkzeug, itsdangerous | Password hashing and reset tokens |
+| Email | Flask-Mail | Password reset emails |
+| Frontend | Jinja2, Bootstrap, CSS | Server-rendered UI |
+| Charts | Chart.js | Dashboard graphs |
 
-### Why This Stack?
-
-**Flask** – Lightweight, flexible, doesn't impose architecture decisions  
-**SQLAlchemy** – Powerful ORM with relationship handling and migrations  
-**WTForms** – Server-side validation with reusable form classes  
-**SQLite** – Zero-config database perfect for small-to-medium deployments  
-**Flask-Migrate** – Handles schema changes without manual SQL
+I kept the stack simple on purpose. This app does not need a separate frontend server or a build pipeline. Flask, Jinja, Bootstrap, and Chart.js are enough for the MVP.
 
 ---
 
-## Installation & Setup
+## Quick Start
 
-### Prerequisites
-
-- Python 3.7+
-- Git
-- SMTP server access (Gmail works out of the box)
-
-### Setup Steps
+Clone the repo:
 
 ```bash
-# 1. Clone and create virtual environment
 git clone <repository-url>
-cd business-dashboard
-python -m venv venv
-source venv/bin/activate   # macOS/Linux
-# venv\Scripts\activate    # Windows
-
-# 2. Install dependencies
-pip install -r requirements.txt
-
-# 3. Create .env file (see Environment Variables below)
-
-# 4. Initialize database
-flask db upgrade
-
-# 5. Run the app
-python run.py  # Development (port 5000)
-# gunicorn run:app  # Production (port 8000)
+cd Business_Dashboard
 ```
 
-### Environment Variables
+Create a virtual environment:
 
-Create a `.env` file in the project root:
 ```bash
-SECRET_KEY=your-secret-key-here  # Generate: python -c "import secrets; print(secrets.token_hex(32))"
-DATABASE_URL=sqlite:///instance/business.db
-FLASK_ENV=development
+python -m venv venv
+source venv/bin/activate
+```
 
-# Email configuration
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Create a `.env` file:
+
+```bash
+cat > .env << EOF
+SECRET_KEY=$(python -c "import secrets; print(secrets.token_hex(32))")
+DATABASE_URL=sqlite:///dev.db
+FLASK_ENV=development
 MAIL_SERVER=smtp.gmail.com
 BUSINESS_DASHBOARD_EMAIL=your-email@gmail.com
-BUSINESS_DASHBOARD_EMAIL_PASSWORD=your-gmail-app-password
+BUSINESS_DASHBOARD_EMAIL_PASSWORD=your-app-password
+EOF
 ```
 
-**Getting a Gmail App Password:**
-1. Enable 2FA on your Google account
-2. Go to: Google Account → Security → 2-Step Verification → App passwords
-3. Generate a new app password for "Mail"
-4. Use that 16-character password in `.env`
+Run migrations:
 
----
-
-## Configuration
-
-### Required Variables
-
-| Variable | Description |
-|----------|-------------|
-| `SECRET_KEY` | Flask session encryption key (64 chars recommended) |
-| `DATABASE_URL` | Database connection string (default: `sqlite:///dev.db` in dev) |
-| `MAIL_SERVER` | SMTP server address (e.g., `smtp.gmail.com`) |
-| `BUSINESS_DASHBOARD_EMAIL` | Email address for sending |
-| `BUSINESS_DASHBOARD_EMAIL_PASSWORD` | Email password or app-specific password |
-
-### Config Classes
-
-The app uses different configs for development and production in `app/config.py`:
-
-**DevelopmentConfig:**
-- Debug mode enabled, auto-reload on code changes
-- Uses SQLite with default path: `sqlite:///dev.db`
-- Detailed error pages
-
-**ProductionConfig:**
-- Debug mode disabled, generic error pages
-- Requires `DATABASE_URL` environment variable
-- Can use PostgreSQL or MySQL
-
-Switch by setting `FLASK_ENV`:
 ```bash
-export FLASK_ENV=development  # or production
+flask db upgrade
 ```
 
-**Startup validation:** Config checks for missing required variables and prints warnings:
-```python
-for name in ["MAIL_USERNAME", "MAIL_PASSWORD", "MAIL_DEFAULT_SENDER", "MAIL_SERVER"]:
-    if getattr(Config, name) is None:
-        print(f"Missing: {name}")
+Start the app:
+
+```bash
+python run.py
+```
+
+Open:
+
+```text
+http://127.0.0.1:5000
 ```
 
 ---
 
-## Usage
+## Environment Variables
 
-### Creating an Account
+| Variable | Required | Description |
+| --- | --- | --- |
+| `SECRET_KEY` | Yes | Flask session and reset token signing key |
+| `DATABASE_URL` | Yes in production | Database connection string |
+| `FLASK_ENV` | No | `development` or `production` |
+| `MAIL_SERVER` | Yes for reset email | SMTP server |
+| `BUSINESS_DASHBOARD_EMAIL` | Yes for reset email | Sender email |
+| `BUSINESS_DASHBOARD_EMAIL_PASSWORD` | Yes for reset email | SMTP password or app password |
 
-1. Visit the homepage and click **"Sign Up"**
-2. Enter your name, email, and password
-3. Password requirements: 6+ characters, 1 letter, 1 number, 1 special character
-4. Click **"Sign Up"** – you'll be automatically logged in
+Example:
 
-### Managing Customers
+```bash
+SECRET_KEY=change-this-secret
+DATABASE_URL=sqlite:///dev.db
+FLASK_ENV=development
+MAIL_SERVER=smtp.gmail.com
+BUSINESS_DASHBOARD_EMAIL=your-email@gmail.com
+BUSINESS_DASHBOARD_EMAIL_PASSWORD=your-app-password
+```
 
-**Add a customer:**
-1. Click **"Customers"** → **"Add Customer"**
-2. Fill in: Name (required), Email (unique), Phone, Company
-3. Click **"Save Customer"**
-
-**Edit/Delete:**
-- Click **Edit** to update customer details
-- Click **Delete** to remove (blocked if customer has orders)
-
-### Creating Orders
-
-1. Click **"Orders"** → **"Add Order"**
-2. Fill in: Order ID (unique), Customer, Product, Quantity, Price, Status
-3. Click **"Save Order"**
-
-**Note:** You must have at least one customer before creating orders.
-
-### Dashboard Overview
-
-The main dashboard shows four key metrics:
-
-| Metric | Description |
-|--------|-------------|
-| **Total Customers** | Count of all your customers |
-| **Total Orders** | Count of all orders across all customers |
-| **Pending Orders** | Orders with "pending" status |
-| **Total Revenue** | Sum of (quantity × price) for all orders |
-
-### Password Reset
-
-1. Click **"Forgot Password?"** on the login page
-2. Enter your email address
-3. Check your email for a reset link (valid for 1 hour)
-4. Click the link, enter your new password, and confirm
-
-**Security note:** The app always shows "email sent" even if the address isn't registered (prevents email enumeration attacks).
+For Gmail, use an app password.
 
 ---
 
 ## Project Structure
-```
-business-dashboard/
-│
-├── app/
-│   ├── __init__.py              # Application factory
-│   ├── config.py                # Config classes (Dev/Prod)
-│   ├── extensions.py            # Flask extensions (db, mail, migrate)
-│   ├── mail_utils.py            # Email utilities
-│   │
-│   ├── auth/                    # Authentication blueprint
-│   │   ├── routes.py           # Login, signup, password reset
-│   │   ├── decorators.py       # @login_required decorator
-│   │   └── utils.py            # current_user() helper
-│   │
-│   ├── models/                  # Database models
-│   │   ├── user.py             # User + password helpers
-│   │   ├── customer.py         # Customer model
-│   │   └── order.py            # Order model with total_amount property
-│   │
-│   ├── forms/                   # WTForms classes
-│   │   ├── auth_forms.py       # SignUp, Login, ForgotPassword, ResetPassword
-│   │   ├── customer.py         # CustomerCreate, CustomerEdit
-│   │   └── order.py            # OrderCreate, OrderEdit
-│   │
-│   ├── routes/                  # Route blueprints
-│   │   ├── main.py             # Dashboard (index_bp)
-│   │   ├── customers.py        # Customer CRUD (customers_bp)
-│   │   └── orders.py           # Order CRUD (orders_bp)
-│   │
-│   ├── templates/               # Jinja2 templates
-│   │   ├── layout.html         # Base template
-│   │   ├── index.html          # Dashboard
-│   │   ├── customers.html      # Customer list
-│   │   ├── orders.html         # Order list
-│   │   └── auth/               # Auth templates
-│   │
-│   └── static/                  # CSS, JS, images
-│
-├── instance/                    # Instance files
-│   └── business.db             # SQLite database
-│
-├── migrations/                  # Alembic migrations
-│
-├── run.py                      # Entry point with before_request hooks
-├── gunicorn.conf.py            # Production config
-├── requirements.txt            # Dependencies
-└── .env                        # Environment variables (gitignored)
+
+```text
+Business_Dashboard/
+  app/
+    auth/        login, signup, password reset, decorators
+    forms/       WTForms classes
+    models/      User, Customer, Order
+    routes/      dashboard, customers, orders, imports
+    services/    import parsing and validation
+    static/      CSS, logos, favicon files
+    templates/   Jinja pages
+  migrations/
+  images/
+  tests/
+  run.py
+  requirements.txt
 ```
 
 ---
 
-## Database Schema
+## Main Routes
 
-### Tables
+### Public Routes
 
-**users**
-```sql
-CREATE TABLE users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name VARCHAR(200) NOT NULL,
-    email VARCHAR(50) UNIQUE NOT NULL,
-    password_hash VARCHAR NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
+| Method | Route | Purpose |
+| --- | --- | --- |
+| `GET` | `/` | Public homepage |
+| `GET, POST` | `/signup` | Create account |
+| `GET, POST` | `/login` | Login |
+| `GET, POST` | `/forgot_password` | Request password reset |
+| `GET, POST` | `/reset_password/<token>` | Set new password |
+
+### Protected Routes
+
+| Method | Route | Purpose |
+| --- | --- | --- |
+| `GET` | `/dashboard` | Main analytics dashboard |
+| `POST` | `/logout` | Logout |
+| `GET` | `/customers/` | Customer list |
+| `GET, POST` | `/customers/new` | Add customer |
+| `GET, POST` | `/customers/<id>/edit` | Edit customer |
+| `POST` | `/customers/<id>/delete` | Delete customer |
+| `GET` | `/orders/` | Order list |
+| `GET, POST` | `/orders/new` | Add order |
+| `GET, POST` | `/orders/<id>/edit` | Edit order |
+| `POST` | `/orders/<id>/delete` | Delete order |
+| `GET` | `/imports/` | Import page |
+| `POST` | `/imports/customers` | Import customers |
+| `POST` | `/imports/orders` | Import orders |
+
+---
+
+## Dashboard
+
+The dashboard lives at `/dashboard`.
+
+It is protected by login and only shows data for the current user.
+
+The backend prepares summary values and chart data before rendering the page.
+
+```python
+orders = (
+    Order.query.join(Customer)
+    .filter(Customer.user_id == user.id)
+    .order_by(Order.created.asc())
+    .all()
+)
 ```
 
-**customer**
-```sql
-CREATE TABLE customer (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    name VARCHAR(100) NOT NULL,
-    email VARCHAR(120) UNIQUE NOT NULL,
-    phone VARCHAR(20),
-    company VARCHAR(100),
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
-);
+The dashboard currently shows:
+
+```text
+Total Revenue
+Average Order
+Customers
+Total Orders
+Pending Orders
+Completed Orders
+Revenue Over Time
+Order Status
+Customer Growth
+Recent Orders
+Top Customers
 ```
 
-**order**
-```sql
-CREATE TABLE "order" (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    order_number VARCHAR(50) UNIQUE NOT NULL,
-    customer_id INTEGER NOT NULL,
-    product VARCHAR(200) NOT NULL,
-    quantity INTEGER NOT NULL DEFAULT 1,
-    price FLOAT NOT NULL DEFAULT 0.0,
-    status VARCHAR(50) DEFAULT 'pending',
-    created DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (customer_id) REFERENCES customer(id)
-);
+Chart data is passed to the page as JSON:
+
+```python
+chart_data = {
+    "revenue": {
+        "labels": list(revenue_by_day.keys()),
+        "values": [round(value, 2) for value in revenue_by_day.values()],
+    },
+    "statuses": {
+        "labels": [status.title() for status in status_counts.keys()],
+        "values": list(status_counts.values()),
+    },
+    "customers": {
+        "labels": list(customer_growth.keys()),
+        "values": list(customer_growth.values()),
+    },
+}
 ```
 
-**Order model includes a computed property:**
+In the template:
+
+```html
+<script>
+    const chartData = {{ chart_data|tojson }};
+</script>
+```
+
+---
+
+## Customers and Orders
+
+Customers are the base records.
+
+Orders belong to customers, and customers belong to users.
+
+This relationship is what makes the dashboard useful. It allows the app to calculate top customers, customer revenue, recent orders, and order status breakdowns.
+
+### Customer Fields
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| `name` | Yes | Customer name |
+| `email` | Yes | Used for import matching |
+| `phone` | No | Optional contact info |
+| `company` | No | Optional company name |
+| `created_at` | Automatic | Database timestamp |
+
+### Order Fields
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| `order_number` | Yes | Human readable order ID |
+| `customer_id` | Yes | Links order to customer |
+| `product` | Yes | Product or service |
+| `quantity` | Yes | Must be at least 1 |
+| `price` | Yes | Must be 0 or greater |
+| `status` | Yes | pending, processing, completed, cancelled |
+| `created` | Automatic | Database timestamp |
+
+Order total:
+
 ```python
 @property
 def total_amount(self):
     return self.quantity * self.price
 ```
 
-### Relationships
-
-**One-to-Many:**
-- User → Customers (one user has many customers)
-- Customer → Orders (one customer has many orders)
-
-**Key Constraints:**
-- User emails must be unique globally
-- Customer emails must be unique globally
-- Order numbers must be unique per user (enforced in forms)
-- Cannot delete customers with existing orders (enforced in routes)
-
----
-
-## Key Routes
-
-### Public Routes (no login required)
-
-| Method | Route | Description |
-|--------|-------|-------------|
-| `GET/POST` | `/signup` | Registration |
-| `GET/POST` | `/login` | Login |
-| `GET/POST` | `/forgot_password` | Password reset request |
-| `GET/POST` | `/reset_password/<token>` | Password reset form |
-
-### Protected Routes (login required)
-
-**Dashboard & Auth:**
-
-| Method | Route | Description |
-|--------|-------|-------------|
-| `GET` | `/` | Dashboard with stats |
-| `POST` | `/logout` | Clear session and log out |
-
-**Customers:**
-
-| Method | Route | Description |
-|--------|-------|-------------|
-| `GET` | `/customers` | List all customers (paginated) |
-| `GET/POST` | `/customers/new` | Create customer |
-| `GET/POST` | `/customers/<id>/edit` | Edit customer |
-| `POST` | `/customers/<id>/delete` | Delete customer |
-
-**Orders:**
-
-| Method | Route | Description |
-|--------|-------|-------------|
-| `GET` | `/orders` | List all orders (paginated) |
-| `GET/POST` | `/orders/new` | Create order |
-| `GET/POST` | `/orders/<id>/edit` | Edit order |
-| `POST` | `/orders/<id>/delete` | Delete order |
-
----
-
-## Security Features
-
-- ✅ **Password hashing** – Werkzeug's `generate_password_hash` with salt
-- ✅ **CSRF protection** – Flask-WTF on all forms
-- ✅ **Secure password reset** – Time-limited tokens (1 hour) using `itsdangerous`
-- ✅ **User enumeration prevention** – Password reset always shows "email sent"
-- ✅ **Data isolation** – Users can only access their own data via query filters
-- ✅ **SQL injection protection** – SQLAlchemy parameterized queries
-- ✅ **XSS protection** – Jinja2 auto-escapes all variables
-- ✅ **Password complexity** – Enforced via regex validators
-- ✅ **Foreign key checks** – Prevent orphaned records
-
-### How Data Isolation Works
-
-Every query for customers or orders includes the `user_id` filter:
+Customer delete is blocked when the customer has orders:
 
 ```python
-# Customers
-customers = Customer.query.filter_by(user_id=user.id).all()
-
-# Orders (with join)
-orders = Order.query.join(Customer).filter(Customer.user_id == user.id).all()
-
-# Edit/delete routes
-customer = Customer.query.filter(
-    Customer.id == id, 
-    Customer.user_id == user.id
-).first_or_404()
-```
-
-This ensures User A can never access User B's data, even if they guess the ID.
-
----
-
-## Architecture Decisions
-
-### Blueprint Organization
-
-The app uses Flask blueprints to separate concerns:
-
-- **`auth` blueprint** – All authentication-related routes
-- **`index` blueprint** – Dashboard homepage
-- **`customers` blueprint** – Customer CRUD
-- **`orders` blueprint** – Order CRUD
-
-**Benefits:** Routes are organized by feature, URL prefixes defined once, easy to test in isolation.
-
-### Form Validation Strategy
-
-Forms inherit from base classes to avoid duplication:
-
-```python
-class BaseForm(FlaskForm):
-    name = StringField('Name', validators=[DataRequired()])
-    email = StringField('Email', validators=[DataRequired(), Email()])
-
-class CustomerCreate(BaseForm):
-    submit = SubmitField('Save Customer')
-    
-    def validate_email(self, email):
-        customer = Customer.query.filter_by(email=email.data).first()
-        if customer:
-            raise ValidationError("Email is connected to another customer")
-
-class CustomerEdit(BaseForm):
-    submit = SubmitField('Update Customer')
-    
-    def __init__(self, customer=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.customer = customer
-    
-    def validate_email(self, email):
-        customer = Customer.query.filter(
-            Customer.email == email.data, 
-            self.customer.id != Customer.id
-        ).first()
-        if customer:
-            raise ValidationError('Email is connected to another customer')
-```
-
-**Why this works:**
-- `CustomerCreate` checks for any duplicate email
-- `CustomerEdit` excludes the current customer from duplicate check
-- Shared fields defined once in `BaseForm`
-
-**Dynamic form choices** for order forms:
-```python
-class OrderCreate(BaseForm):
-    customer_id = SelectField('Customer', coerce=int)
-    
-    def __init__(self, user_id=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if user_id:
-            self.customer_id.choices = [
-                (c.id, c.name) 
-                for c in Customer.query.filter(Customer.user_id == user_id).all()
-            ]
-```
-
-This prevents User A from seeing User B's customers in the dropdown.
-
-### Data Isolation
-
-Order numbers must be unique per user (not globally):
-
-```python
-def validate_order_number(self, order_number):
-    order = Order.query.join(Customer).filter(
-        Order.order_number == order_number.data,
-        Customer.user_id == self.user_id
-    ).first()
-    if order:
-        raise ValidationError('Order number already registered.')
-```
-
-This allows different users to use the same order number scheme (e.g., "ORD-001") without conflicts.
-
-### User Loading Mechanism
-
-The `run.py` file handles user loading before each request:
-
-```python
-@app.before_request
-def activate_current_user():
-    """Load current user before each request"""
-    user_id = session.get("user_id")
-    g.user = db.session.get(User, user_id) if user_id else None
-
-@app.context_processor
-def inject_user():
-    """Make current_user available in all templates"""
-    return dict(current_user=g.user)
-```
-
-This ensures `g.user` is always available in routes without repeated database queries, and `current_user` is available in all templates.
-
----
-
-## Production Deployment
-
-### Gunicorn Configuration
-
-The `gunicorn.conf.py` has production-ready defaults with environment variable overrides:
-
-```python
-import os
-
-bind = os.getenv("GUNICORN_BIND", "0.0.0.0:8000")
-workers = int(os.getenv("GUNICORN_WORKERS", 4))
-timeout = int(os.getenv("GUNICORN_TIMEOUT", 30))
-
-accesslog = "-"
-errorlog = "-"
-```
-
-**Starting:**
-```bash
-gunicorn run:app  # Default settings
-gunicorn --config gunicorn.conf.py run:app  # Explicit config
-GUNICORN_WORKERS=8 gunicorn run:app  # Override via env vars
-```
-
-### Reverse Proxy Setup (nginx)
-
-```nginx
-upstream business_dashboard {
-    server 127.0.0.1:8000;
-}
-
-server {
-    listen 80;
-    server_name yourdomain.com;
-    return 301 https://$server_name$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    server_name yourdomain.com;
-
-    ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
-
-    location / {
-        proxy_pass http://business_dashboard;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    location /static {
-        alias /var/www/business-dashboard/app/static;
-        expires 30d;
-    }
-}
-```
-
-**Get SSL certificate:**
-```bash
-sudo apt-get install certbot python3-certbot-nginx
-sudo certbot --nginx -d yourdomain.com
-```
-
-### systemd Service
-
-Create `/etc/systemd/system/business-dashboard.service`:
-```ini
-[Unit]
-Description=Business Dashboard
-After=network.target
-
-[Service]
-User=www-data
-WorkingDirectory=/var/www/business-dashboard
-Environment="PATH=/var/www/business-dashboard/venv/bin"
-EnvironmentFile=/var/www/business-dashboard/.env
-ExecStart=/var/www/business-dashboard/venv/bin/gunicorn --config gunicorn.conf.py run:app
-
-[Install]
-WantedBy=multi-user.target
-```
-
-**Enable and start:**
-```bash
-sudo systemctl enable business-dashboard
-sudo systemctl start business-dashboard
-```
-
----
-
-## What I Learned
-
-### The Join Query Pattern
-
-Initially doing N+1 queries:
-```python
-user_customers = Customer.query.filter_by(user_id=user.id).all()
-for customer in user_customers:
-    orders = Order.query.filter_by(customer_id=customer.id).all()  # N+1!
-```
-
-Learned to use joins:
-```python
-orders = Order.query.join(Customer).filter(Customer.user_id == user.id).all()
-```
-
-Much faster and cleaner.
-
-### Form Validation Subtleties
-
-WTForms' custom validators required understanding:
-1. Method must be named `validate_<field_name>`
-2. Automatically called during `form.validate_on_submit()`
-3. Raise `ValidationError` to display error message
-4. Edit forms need extra context to exclude current record from duplicate checks
-
-### The Orphan Delete Problem
-
-Original code allowed deleting customers with orders. Fix:
-```python
-if Order.query.filter_by(customer_id=id).first():
+if customer.orders.first():
     flash("Cannot delete customer with existing orders.", "danger")
     return redirect(url_for("customers.customers"))
 ```
 
-Better than relying on database-level cascade rules.
+---
 
-### Flask-Migrate Is Essential
+## Bulk Import
 
-Early on, I manually edited the database for schema changes. Flask-Migrate is magic:
-```bash
-# Change model
-class Customer(db.Model):
-    company = db.Column(db.String(100))  # Added field
+Bulk import is part of the MVP because a dashboard needs data before it becomes useful.
 
-# Generate and apply migration
-flask db migrate -m "Add company field"
-flask db upgrade
+Import files can be CSV or JSON.
+
+### Customer CSV
+
+```csv
+name,email,phone,company
+Jane Smith,jane@example.com,555-1111,Smith Studio
+Mark Lee,mark@example.com,555-2222,Lee Consulting
 ```
 
-Migrations are version-controlled, reversible, and shareable.
+### Customer JSON
 
-### Production Readiness Is About Structure
+```json
+{
+  "customers": [
+    {
+      "name": "Jane Smith",
+      "email": "jane@example.com",
+      "phone": "555-1111",
+      "company": "Smith Studio"
+    }
+  ]
+}
+```
 
-Refactoring from single-file to blueprints made deployment possible. The actual business logic didn't change much—the structure changed everything. Each blueprint can be tested independently, config can be injected, and Gunicorn can run multiple workers.
+### Order CSV
+
+```csv
+order_number,customer_email,customer_name,customer_phone,customer_company,product,quantity,price,status
+ORD-1001,jane@example.com,Jane Smith,555-1111,Smith Studio,Website Design,1,1200,completed
+ORD-1002,mark@example.com,Mark Lee,555-2222,Lee Consulting,Monthly Support,3,250,pending
+```
+
+### Order JSON
+
+```json
+{
+  "orders": [
+    {
+      "order_number": "ORD-1001",
+      "customer_email": "jane@example.com",
+      "customer_name": "Jane Smith",
+      "product": "Website Design",
+      "quantity": 1,
+      "price": 1200,
+      "status": "completed"
+    }
+  ]
+}
+```
+
+### How Order Import Handles Customers
+
+Orders stay connected to customers.
+
+The importer uses `customer_email` as the matching key.
+
+1. If the email matches one of the user's customers, the order attaches to that customer.
+2. If the email is new and `customer_name` exists, the importer creates the customer and attaches the order.
+3. If the email is new and `customer_name` is missing, the row fails.
+4. If any row fails, nothing is imported.
+
+Validation catches missing fields, invalid emails, duplicate emails, duplicate order numbers, invalid statuses, bad quantity, and bad price.
+
+---
+
+## Database Design
+
+Main models:
+
+| Model | Purpose | Relationship |
+| --- | --- | --- |
+| `User` | Account owner | Has many customers |
+| `Customer` | Customer profile | Belongs to a user and has many orders |
+| `Order` | Revenue or work item | Belongs to a customer |
+
+Relationship summary:
+
+```text
+User has many Customers
+Customer has many Orders
+Order belongs to one Customer
+Customer belongs to one User
+```
+
+Order model:
+
+```python
+class Order(db.Model):
+    __tablename__ = "order"
+
+    id = db.Column(db.Integer, primary_key=True)
+    order_number = db.Column(db.String(50), unique=True, nullable=False)
+    customer_id = db.Column(db.Integer, db.ForeignKey("customer.id"), nullable=False)
+    product = db.Column(db.String(200), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False, default=1)
+    price = db.Column(db.Float, nullable=False, default=0)
+    status = db.Column(db.String(50), default="pending")
+```
+
+Orders do not store `user_id` directly. Ownership comes through the customer relationship.
+
+---
+
+## Security and Data Isolation
+
+Every logged-in user has a private workspace.
+
+Customer queries filter by `user_id`:
+
+```python
+pagination = Customer.query.filter_by(user_id=user.id).order_by(
+    Customer.created_at.desc()
+).paginate(page=page, per_page=10, error_out=False)
+```
+
+Order queries join through customers:
+
+```python
+pagination = (
+    Order.query.join(Customer)
+    .filter(Customer.user_id == user.id)
+    .order_by(Order.created.desc())
+    .paginate(page=page, per_page=10, error_out=False)
+)
+```
+
+The main rule is:
+
+```text
+Do not query customer or order records without checking ownership.
+```
+
+Auth uses sessions. The current user is loaded before each request:
+
+```python
+@app.before_request
+def activate_current_user():
+    user_id = session.get("user_id")
+    g.user = db.session.get(User, user_id) if user_id else None
+```
+
+Passwords are hashed with Werkzeug. Password reset tokens use `itsdangerous` and expire after one hour.
+
+---
+
+## Architecture
+
+The project uses a Flask app factory, blueprints, SQLAlchemy models, WTForms forms, Jinja templates, and a small service layer.
+
+Blueprints:
+
+```text
+auth       signup, login, logout, password reset
+index      public homepage and dashboard
+customers  customer CRUD
+orders     order CRUD
+imports    CSV and JSON uploads
+```
+
+Import logic is kept out of the route file:
+
+```text
+app/services/imports.py
+```
+
+That keeps the import routes focused on request handling and the service focused on parsing and validation.
+
+The UI uses one shared layout:
+
+```text
+app/templates/layout.html
+```
+
+---
+
+## Code Samples
+
+Homepage route:
+
+```python
+@index_bp.route("/")
+def index():
+    return render_template("home.html")
+```
+
+Import parser:
+
+```python
+def parse_uploaded_rows(uploaded_file, record_key):
+    filename = (uploaded_file.filename or "").lower()
+    raw_content = uploaded_file.read().decode("utf-8-sig")
+
+    if filename.endswith(".csv"):
+        reader = csv.DictReader(StringIO(raw_content))
+        return [_normalize_row(row) for row in reader]
+
+    if filename.endswith(".json"):
+        payload = json.loads(raw_content)
+        if isinstance(payload, dict):
+            payload = payload.get(record_key, [])
+        return [_normalize_row(row) for row in payload if isinstance(row, dict)]
+
+    raise ValueError("Upload a CSV or JSON file.")
+```
+
+---
+
+## Checks
+
+Checks used before pushing:
+
+```bash
+venv/bin/python -m compileall -q app
+git diff --check
+```
+
+Route smoke checks were run for the public pages, protected pages, customer pages, order pages, and import pages.
+
+Import smoke checks were run for customer CSV import, order CSV import with an existing customer, and order CSV import that creates a missing customer.
+
+`pytest` is not installed in the local virtual environment yet. A proper test suite should be added next.
+
+---
+
+## Deployment Notes
+
+The repo includes a Gunicorn config:
+
+```python
+bind = os.getenv("GUNICORN_BIND", "0.0.0.0:8000")
+workers = int(os.getenv("GUNICORN_WORKERS", 4))
+timeout = int(os.getenv("GUNICORN_TIMEOUT", 30))
+```
+
+Run with Gunicorn:
+
+```bash
+gunicorn --config gunicorn.conf.py run:app
+```
+
+Production should include a strong `SECRET_KEY`, a production database URL, working SMTP credentials, HTTPS, a reverse proxy, and `flask db upgrade` during deploy.
 
 ---
 
 ## Troubleshooting
 
-### "ModuleNotFoundError: No module named 'app'"
-**Problem:** Running from wrong directory  
-**Solution:** `cd /path/to/business-dashboard && python run.py`
+### App prints missing mail values
 
-### "RuntimeError: Missing required environment variables"
-**Problem:** Environment variables not set  
-**Solution:** Check `.env` has: `SECRET_KEY`, `DATABASE_URL`, `MAIL_SERVER`, `BUSINESS_DASHBOARD_EMAIL`, `BUSINESS_DASHBOARD_EMAIL_PASSWORD`
+Set `BUSINESS_DASHBOARD_EMAIL`, `BUSINESS_DASHBOARD_EMAIL_PASSWORD`, and `MAIL_SERVER`.
 
-If you see "Missing: MAIL_USERNAME" on startup, it means `BUSINESS_DASHBOARD_EMAIL` is not set.
+The app can render pages without email credentials, but password reset emails will not send.
 
-### "No such table: users"
-**Problem:** Database not initialized  
-**Solution:** `flask db upgrade`
+### Database tables do not exist
 
-### "SMTPAuthenticationError"
-**Problem:** Using regular Gmail password instead of app password  
-**Solution:** Generate app-specific password in Google Account settings (requires 2FA)
+Run:
 
-### "Cannot delete customer with existing orders"
-**Problem:** Customer has orders  
-**Solution:** Delete orders first, then delete customer
-
-### "Email is connected to another customer"
-**Problem:** Email already registered  
-**Solution:** Use a different email address
-
-### Password reset email not sending
-**Solution:**
-1. Verify SMTP settings in `.env`
-2. Check spam folder
-3. Verify `BUSINESS_DASHBOARD_EMAIL` is set correctly
-
-### Users seeing each other's data
-**Problem:** Missing `user_id` filter  
-**Solution:** Always include user filter:
-```python
-customers = Customer.query.filter_by(user_id=user.id).all()
+```bash
+flask db upgrade
 ```
+
+### Customer cannot be deleted
+
+The customer probably has orders. Delete the customer's orders first, then delete the customer.
+
+### Order import fails
+
+Check `order_number`, `customer_email`, `product`, `quantity`, `price`, and `status`. If the customer email is new, also include `customer_name`.
+
+---
+
+## What I Learned
+
+Order ownership works through customers, so safe order queries need a join:
+
+```python
+Order.query.join(Customer).filter(Customer.user_id == user.id)
+```
+
+Bulk import should not break the data model. Matching orders by customer email keeps imports practical while preserving customer revenue and order history.
+
+A dashboard also needs fast data entry. Charts are not useful if users have to type every record one by one.
+
+The homepage matters too. `/` now explains the product, while `/dashboard` is the private workspace.
+
+---
+
+## Next Improvements
+
+- Add a real pytest suite
+- Add search and filters
+- Add date range filters on the dashboard
+- Add CSV export
+- Add import preview before saving
+- Add per-user uniqueness at the database level
+- Add account settings
+- Add customer detail pages
+- Add monthly revenue comparison
 
 ---
 
 ## License
 
-MIT License – use it, modify it, deploy it, sell it. Do whatever you want with it.
+MIT License.
+
+Use it, modify it, deploy it, and build on top of it.
+
+<div align="center">
+
+Built for the love of development by Richard Oyelowo
+
+</div>

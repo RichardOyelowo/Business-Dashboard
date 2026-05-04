@@ -1,4 +1,3 @@
-from os import wait
 from flask import Blueprint, render_template, redirect, request, flash, url_for, g
 from app.auth import login_required
 from app.models import Customer, Order
@@ -45,7 +44,7 @@ def order_new():
         db.session.commit()
 
         flash('Order added successfully!', 'success')
-        return redirect(url_for("index.index"))
+        return redirect(url_for("index.dashboard"))
 
     return render_template("order_form.html", form=form, edit_form=False)
 
@@ -68,7 +67,7 @@ def order_edit(id):
     return render_template("order_form.html", form=form, edit_form=True, order_id=id)
 
 
-@orders_bp.route("/<int:id>/delete", methods=["GET","POST"])
+@orders_bp.route("/<int:id>/delete", methods=["POST"])
 @login_required
 def order_delete(id):
     user = g.user

@@ -1,31 +1,30 @@
 {% extends "layout.html" %}
 {% from "macros.html" import render_field %}
 
-{% block title %}Login{% endblock %}
+{% block title %} | Login{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-8">
-        <h1>Login</h1>
-        <div class="card mt-4">
-            <div class="card-body">
-                <form action="{{ url_for('auth.login') }}" method="post">
-                    {{ form.hidden_tag() }}
-
-                    {{ render_field(form.email) }}
-                    {{ render_field(form.password) }}
-                    
-                    <div class="mt-4">
-                        {{ form.submit(class="btn btn-primary") }}
-                        
-                    </div>
-                    <div class="mt-4">
-                        <a type="submit" class="btn btn-secondary" href="{{ url_for('auth.signup') }}">Create account</a>
-                        <a href="{{ url_for('auth.forgot_password') }}">Forgotten Password</a>
-                    </div>
-                </form>
+<div class="auth-wrap">
+    <div class="auth-aside">
+        <p class="home-kicker">Welcome back</p>
+        <h1>Pick up where your business data left off.</h1>
+        <p>Log in to manage customers, review orders, import records, and monitor revenue trends.</p>
+    </div>
+    <div class="auth-card">
+        <h2>Login</h2>
+        <p class="text-muted">Access your workspace.</p>
+        <form action="{{ url_for('auth.login') }}" method="post">
+            {{ form.hidden_tag() }}
+            {{ render_field(form.email) }}
+            {{ render_field(form.password) }}
+            <div class="d-grid mt-4">
+                {{ form.submit(class="btn btn-primary") }}
             </div>
-        </div>
+            <div class="d-flex flex-wrap justify-content-between gap-2 mt-3">
+                <a href="{{ url_for('auth.signup') }}">Create account</a>
+                <a href="{{ url_for('auth.forgot_password') }}">Forgot password?</a>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}

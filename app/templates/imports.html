@@ -1,0 +1,90 @@
+{% extends "layout.html" %}
+
+{% block title %} | Import Data{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-title">
+        <h1>Import Data</h1>
+        <p>Upload CSV or JSON files while preserving the customer-to-order relationship.</p>
+    </div>
+    <div class="page-actions">
+        <a class="btn btn-outline-secondary" href="{{ url_for('customers.customers') }}">Customers</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('orders.orders') }}">Orders</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="panel">
+            <div class="panel-header">
+                <div>
+                    <h2>Customer Import</h2>
+                    <p>Create customer records before attaching orders.</p>
+                </div>
+            </div>
+            <form action="{{ url_for('imports.import_customers') }}" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label class="form-label" for="customer-file">CSV or JSON file</label>
+                    <input id="customer-file" class="form-control" type="file" name="data_file" accept=".csv,.json" required>
+                </div>
+                <button class="btn btn-primary" type="submit">Import Customers</button>
+            </form>
+            <div class="sample-block mt-4">
+                <h2>Customer columns</h2>
+                <code>name,email,phone,company</code>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="panel">
+            <div class="panel-header">
+                <div>
+                    <h2>Order Import</h2>
+                    <p>Attach orders by customer_email or create customers from the order file.</p>
+                </div>
+            </div>
+            <form action="{{ url_for('imports.import_orders') }}" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label class="form-label" for="order-file">CSV or JSON file</label>
+                    <input id="order-file" class="form-control" type="file" name="data_file" accept=".csv,.json" required>
+                </div>
+                <button class="btn btn-primary" type="submit">Import Orders</button>
+            </form>
+            <div class="sample-block mt-4">
+                <h2>Order columns</h2>
+                <code>order_number,customer_email,customer_name,customer_phone,customer_company,product,quantity,price,status</code>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="panel mt-3">
+    <div class="panel-header">
+        <div>
+            <h2>Relationship Rules</h2>
+            <p>Orders remain connected to customers so the dashboard can calculate customer revenue and history.</p>
+        </div>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="import-rule">
+                <span>Existing customer</span>
+                <strong>Match by email</strong>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="import-rule">
+                <span>New customer in order file</span>
+                <strong>Use customer_name</strong>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="import-rule">
+                <span>Validation issue</span>
+                <strong>No partial import</strong>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

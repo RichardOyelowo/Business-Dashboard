@@ -10,7 +10,7 @@ class SignUp(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired(), Length(min=6, max=20), 
         Regexp(r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).*$', 
             message='Password must contain at least 1 letter, 1 number and 1 symbol')])
-    submit = SubmitField('SignUp')
+    submit = SubmitField('Create Account')
 
 
     def validate_email(self, email):

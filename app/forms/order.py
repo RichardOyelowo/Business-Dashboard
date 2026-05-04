@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField, IntegerField, FloatField, SubmitField
-from wtforms.validators import DataRequired, Length, ValidationError
+from wtforms.validators import DataRequired, Length, NumberRange, ValidationError
 from app.models import Order, Customer
 
 
@@ -8,8 +8,8 @@ class BaseForm(FlaskForm):
     order_number = StringField('Order ID', validators=[DataRequired(), Length(min=2, max=100)])
     customer_id = SelectField('Customer ID', coerce=int, validators=[DataRequired()])
     product = StringField('Product', validators=[DataRequired(), Length(max=200)])
-    quantity = IntegerField('Quantity', validators=[DataRequired()], default=1)
-    price = FloatField('Price', validators=[DataRequired()])
+    quantity = IntegerField('Quantity', validators=[DataRequired(), NumberRange(min=1)], default=1)
+    price = FloatField('Price', validators=[DataRequired(), NumberRange(min=0)])
     status = SelectField('Status', validators=[DataRequired()], choices=[
         ('pending', 'Pending'),
         ('processing', 'Processing'),

@@ -1,52 +1,39 @@
 {% from "macros.html" import render_field %}
 {% extends "layout.html" %}
 
+{% block title %} | {{ "Edit Order" if edit_form else "Add Order" }}{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-md-8">
-         {% if edit_form %}
-            <h1>✏️ Edit Order</h1>
-            <div class="card mt-4">
-                <div class="card-body">
-                    <form action="{{ url_for('orders.order_edit', id = order_id) }}" method="post">
-                        {{ form.hidden_tag() }}
-                        
-                        {{ render_field(form.order_number) }}
-                        {{ render_field(form.customer_id) }}
-                        {{ render_field(form.product) }}
-                        {{ render_field(form.quantity) }}
-                        {{ render_field(form.price) }}
-                        {{ render_field(form.status) }}
-                        
-                        <div class="mt-4">
-                            {{ form.submit(class="btn btn-primary") }}
-                            <a href="{{ url_for('orders.orders') }}" class="btn btn-secondary">Cancel</a>
-                        </div>
-                    </form>
+<div class="form-page">
+    <div class="page-header">
+        <div class="page-title">
+            <h1>{{ "Edit Order" if edit_form else "Add Order" }}</h1>
+            <p>Orders connect revenue and fulfillment status back to a customer.</p>
+        </div>
+    </div>
+
+    <div class="panel">
+        <form action="{{ url_for('orders.order_edit', id=order_id) if edit_form else url_for('orders.order_new') }}" method="post">
+            {{ form.hidden_tag() }}
+
+            {{ render_field(form.order_number) }}
+            {{ render_field(form.customer_id) }}
+            {{ render_field(form.product) }}
+            <div class="row g-3">
+                <div class="col-md-6">
+                    {{ render_field(form.quantity) }}
+                </div>
+                <div class="col-md-6">
+                    {{ render_field(form.price) }}
                 </div>
             </div>
-        {% else %}
-            <h1>➕ Add New Order</h1>
-            <div class="card mt-4">
-                <div class="card-body">
-                    <form action="{{ url_for('orders.order_new') }}" method="post">
-                        {{ form.hidden_tag() }}
-                        
-                        {{ render_field(form.order_number) }}
-                        {{ render_field(form.customer_id) }}
-                        {{ render_field(form.product) }}
-                        {{ render_field(form.quantity) }}
-                        {{ render_field(form.price) }}
-                        {{ render_field(form.status) }}
-                        
-                        <div class="mt-4">
-                            {{ form.submit(class="btn btn-primary") }}
-                            <a href="{{ url_for('orders.orders') }}" class="btn btn-secondary">Cancel</a>
-                        </div>
-                    </form>
-                </div>
+            {{ render_field(form.status) }}
+
+            <div class="page-actions mt-4">
+                {{ form.submit(class="btn btn-primary") }}
+                <a href="{{ url_for('orders.orders') }}" class="btn btn-outline-secondary">Cancel</a>
             </div>
-        {% endif %}
+        </form>
     </div>
 </div>
 {% endblock %}

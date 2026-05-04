@@ -39,7 +39,7 @@ def customer_new():
         db.session.commit()
 
         flash('Customer Added successfully!', 'success')
-        return redirect(url_for("index.index"))
+        return redirect(url_for("index.dashboard"))
 
     return render_template("customer_form.html", form=form, edit_form=False)
 
@@ -66,16 +66,15 @@ def customer_edit(id):
 @login_required
 def customer_delete(id):
     user = g.user
+    customer = Customer.query.filter_by(id=id, user_id=user.id).first_or_404()
 
-    if Customer.query.join(Order, Order.customer_id == Customer.id).filter(Order.customer_id  == id).first():
+    if customer.orders.first():
         flash("Cannot delete customer with existing orders.", "danger")
 
         return redirect(url_for("customers.customers"))
 
-    customer = Customer.query.filter_by(id=id).first_or_404()
-    if customer:
-        db.session.delete(customer)
-        db.session.commit()
+    db.session.delete(customer)
+    db.session.commit()
 
     flash('Customer deleted successfully!', 'success')
     return redirect(url_for('customers.customers'))

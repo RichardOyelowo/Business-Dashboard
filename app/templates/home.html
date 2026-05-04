@@ -1,0 +1,132 @@
+{% extends "layout.html" %}
+
+{% block title %} | Customer and Order Management{% endblock %}
+
+{% block content %}
+<section class="home-hero">
+    <div class="row align-items-center g-5">
+        <div class="col-lg-7">
+            <p class="home-kicker">Small business command center</p>
+            <h1>Turn customer and order records into business insight.</h1>
+            <p class="hero-copy mt-3">
+                Track customers, manage orders, import spreadsheet data, and see revenue movement from a focused dashboard built for day-to-day operations.
+            </p>
+            <div class="page-actions mt-4">
+                <a class="btn btn-primary" href="{{ url_for('auth.signup') }}">Start Free</a>
+                <a class="btn btn-outline-primary" href="{{ url_for('auth.login') }}">Login</a>
+            </div>
+            <div class="hero-proof">
+                <span class="proof-pill">Private workspace per user</span>
+                <span class="proof-pill">CSV and JSON imports</span>
+                <span class="proof-pill">Revenue and order charts</span>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="dashboard-preview">
+                <div class="preview-toolbar">
+                    <strong>Revenue Snapshot</strong>
+                    <span class="status-badge status-completed">Live</span>
+                </div>
+                <div class="preview-grid">
+                    <div class="preview-metric">
+                        <span>Revenue</span>
+                        <strong>$48.2k</strong>
+                    </div>
+                    <div class="preview-metric">
+                        <span>Orders</span>
+                        <strong>316</strong>
+                    </div>
+                    <div class="preview-metric">
+                        <span>Customers</span>
+                        <strong>94</strong>
+                    </div>
+                </div>
+                <div class="preview-chart">
+                    <span style="height: 34%"></span>
+                    <span style="height: 58%"></span>
+                    <span style="height: 43%"></span>
+                    <span style="height: 76%"></span>
+                    <span style="height: 64%"></span>
+                    <span style="height: 92%"></span>
+                    <span style="height: 71%"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="home-section">
+    <div class="section-heading">
+        <h2>Built around the first real workflows</h2>
+        <p>Get data in, keep it organized, and use it to understand what is happening in the business.</p>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-3">
+            <div class="feature-card">
+                <h2>Customer CRM</h2>
+                <p>Store customer contact details, company information, and customer-specific order history.</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="feature-card">
+                <h2>Order Tracking</h2>
+                <p>Track order numbers, products, quantities, values, and fulfillment status.</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="feature-card">
+                <h2>Bulk Import</h2>
+                <p>Bring in customer and order files without manually creating each record.</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="feature-card">
+                <h2>Analytics</h2>
+                <p>Review revenue trends, customer growth, pending work, and top customers.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="home-section">
+    <div class="row g-4 align-items-start">
+        <div class="col-lg-5">
+            <div class="section-heading">
+                <h2>How imports work without breaking customer links</h2>
+                <p>Orders stay attached to customers, so analytics such as top customers and order history remain meaningful.</p>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="panel workflow-step">
+                        <span class="step-number">1</span>
+                        <div>
+                            <h2>Import customers first</h2>
+                            <p class="text-muted mb-0">Upload customers with name, email, phone, and company.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="panel workflow-step">
+                        <span class="step-number">2</span>
+                        <div>
+                            <h2>Reference by email</h2>
+                            <p class="text-muted mb-0">Order rows use customer_email, which is easier than internal IDs.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="panel workflow-step">
+                        <span class="step-number">3</span>
+                        <div>
+                            <h2>Or create customers from order files</h2>
+                            <p class="text-muted mb-0">If an order file includes customer_name with a new customer_email, the importer creates the customer and attaches the order.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
