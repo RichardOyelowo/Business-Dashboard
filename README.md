@@ -33,7 +33,7 @@ Each user only sees their own customers and orders.
 
 ---
 
-![Dashboard Screenshot](images/image.webp)
+![Business Dashboard Homepage](images/image.webp)
 
 ---
 
