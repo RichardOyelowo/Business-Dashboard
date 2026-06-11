@@ -10,6 +10,8 @@
 
 A Flask business dashboard for customers, orders, imports, and revenue insight.
 
+[![Live Demo](https://img.shields.io/badge/live-businessdashboard.shop-success?style=for-the-badge)](https://businessdashboard.shop)
+
 </div>
 
 ---
@@ -30,6 +32,20 @@ The current version has:
 - User-specific data isolation
 
 Each user only sees their own customers and orders.
+
+## Why This Project Matters
+
+Business Dashboard shows the backend patterns small business tools need before they are useful:
+
+- Authentication and password reset flow
+- User-specific data isolation
+- CRUD flows with validation
+- CSV and JSON imports
+- Dashboard metrics from relational data
+- Service-layer import parsing
+- Server-rendered UI without a frontend build step
+
+The app is intentionally practical. It focuses on workflows a real user can repeat instead of a single demo screen.
 
 ---
 
@@ -139,7 +155,7 @@ I kept the stack simple on purpose. This app does not need a separate frontend s
 Clone the repo:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/RichardOyelowo/Business-Dashboard.git
 cd Business_Dashboard
 ```
 
