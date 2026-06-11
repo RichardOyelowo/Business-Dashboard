@@ -156,7 +156,7 @@ Clone the repo:
 
 ```bash
 git clone https://github.com/RichardOyelowo/Business-Dashboard.git
-cd Business_Dashboard
+cd Business-Dashboard
 ```
 
 Create a virtual environment:
